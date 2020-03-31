@@ -26,4 +26,17 @@ ALTER TABLE pelicula
   ADD FOREIGN KEY (genero_id) REFERENCES genero(id);
   
     
+CREATE TABLE actor (
+id INT NOT NULL AUTO_INCREMENT,
+nombre VARCHAR(70),
+PRIMARY KEY(id)
+);
+
+
+CREATE TABLE actor_pelicula (
+id INT NOT NULL AUTO_INCREMENT,
+actor_id INT NOT NULL,
+pelicula_id INT NOT NULL,
+PRIMARY KEY(id)
+);
 

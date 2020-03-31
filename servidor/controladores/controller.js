@@ -1,6 +1,6 @@
 const connection = require("../lib/conexionbd");
 var controller = {
-    peliculas: (req, res) => {
+    getPeliculas: (req, res) => {
         //Variables para almacenar los valores de los parametros de cada query
         let anio = req.query.anio;
         let genero = req.query.genero;
@@ -74,15 +74,92 @@ var controller = {
             }
         )
     },
-    generos: (req, res) => {
+    getGeneros: (req, res) => {
         connection.query('SELECT * FROM genero', (error, results, fields) => {
             if (error) throw error;
             res.json({ generos: results });
         })
     },
+    getInformacionPeliculas: (req, res) => {
+        let id = req.params.id;
 
+        connection.query(
+            'SELECT * FROM pelicula WHERE id = ?', [id],
+            (error, peliculas, fields) => {
+                if (error) return console.error(error);
+                if (peliculas.length > 0) {
+                    let pelicula = peliculas[0];
+                    let generoId = pelicula.genero_id;
 
+                    connection.query(
+                        'SELECT * FROM genero WHERE id = ?', [generoId],
+                        (error, generos, fields) => {
+                            if (error) return console.error(error);
+                            let genero = generos[0];
 
+                            connection.query(
+                                'SELECT a.* FROM actor_pelicula ap JOIN actor a ON a.id = ap.actor_id WHERE ap.pelicula_id = ?', [id],
+                                (error, actores, fields) => {
+                                    if (error) return console.error(error);
+                                    res.json({
+                                        pelicula: pelicula,
+                                        actores: actores,
+                                        genero: genero
+                                    });
+                                }
+                            );
+                        }
+                    );
+                } else {
+                    res.status(404).send();
+                }
+            }
+        );
+    },
+    getRecomendar: (req, res) => {
+        let genero = req.query.genero;
+        let anio_inicio = req.query.anio_inicio;
+        let anio_fin = req.query.anio_fin;
+        let puntuacion = req.query.puntuacion;
+        let sql = 'SELECT * FROM pelicula p JOIN genero g ON g.id = p.genero_id ';
+        let parametros = [];
+
+        const concatenar = (parametros) => {
+            if (parametros.length > 0) {
+                return ' AND ';
+            } else {
+                return ' WHERE ';
+            }
+        }
+
+        if (genero) {
+            sql += ' WHERE g.nombre = ? ';
+            parametros.push(genero);
+        }
+        if (anio_inicio) {
+            sql += concatenar(parametros) + ' p.anio > ? ';
+            parametros.push(parseInt(anio_inicio));
+        }
+        if (anio_fin) {
+            sql += concatenar(parametros) + ' p.anio < ? ';
+            parametros.push(parseInt(anio_fin));
+        }
+        if (puntuacion) {
+            sql += concatenar(parametros) + ' p.puntuacion > ? ';
+            parametros.push(parseInt(puntuacion));
+        }
+
+        connection.query(
+            sql,
+            parametros,
+            (error, results, fields) => {
+                if (error) console.error(error);
+                res.json({ peliculas: results });
+            }
+        );
+
+    },
 }
+
 
 module.exports = controller;

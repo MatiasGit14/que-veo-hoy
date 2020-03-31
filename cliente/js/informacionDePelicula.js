@@ -1,7 +1,7 @@
 (function() {
     var server = 'http://localhost:8080';
     var params = location.search
-    //se obtiene el id de la película de la cuál tenemos que obtener la información
+        //se obtiene el id de la película de la cuál tenemos que obtener la información
     var id = (params.split("="))[1];
 
     var controladorInformacionDePelicula = new ControladorInformacionDePelicula();
@@ -11,10 +11,10 @@
     function ControladorInformacionDePelicula() {
         this.cargarDetalle = function(data) {
                 var pelicula, actores;
-                
+
                 pelicula = data.pelicula;
                 actores = data.actores;
-                genero = data.pelicula.nombre;
+                genero = data.genero.nombre;
 
                 $(".imagen").attr("src", pelicula.poster);
                 $(".titulo, title").html(pelicula.titulo + " (" + pelicula.anio + ")");
